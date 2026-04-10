@@ -1,0 +1,14 @@
+[Unit]
+Description=WierdCore Python First Boot Setup
+After=multi-user.target
+ConditionPathExists=!/etc/firstboot-done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /root/scripts/firstboot.py
+RemainAfterExit=yes
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
