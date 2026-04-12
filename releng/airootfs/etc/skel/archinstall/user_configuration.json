@@ -1,0 +1,160 @@
+{
+    "app_config": {
+        "audio_config": {
+            "audio": "pipewire"
+        },
+        "bluetooth_config": {
+            "enabled": true
+        },
+        "firewall_config": {
+            "firewall": "ufw"
+        },
+        "power_management_config": {
+            "power_management": "power-profiles-daemon"
+        }
+    },
+    "archinstall-language": "English",
+    "auth_config": {},
+    "bootloader_config": {
+        "bootloader": "Grub",
+        "removable": false,
+        "uki": true
+    },
+    "custom_commands": [],
+    "disk_config": {
+        "btrfs_options": {
+            "snapshot_config": null
+        },
+        "config_type": "default_layout",
+        "device_modifications": [
+            {
+                "device": "/dev/nvme0n1",
+                "partitions": [
+                    {
+                        "btrfs": [],
+                        "dev_path": null,
+                        "flags": [
+                            "boot",
+                            "esp"
+                        ],
+                        "fs_type": "fat32",
+                        "mount_options": [],
+                        "mountpoint": "/boot",
+                        "obj_id": "b3375441-3fef-40c4-8c0a-9eff229469e5",
+                        "size": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "GiB",
+                            "value": 1
+                        },
+                        "start": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "MiB",
+                            "value": 1
+                        },
+                        "status": "create",
+                        "type": "primary"
+                    },
+                    {
+                        "btrfs": [
+                            {
+                                "mountpoint": "/",
+                                "name": "@"
+                            },
+                            {
+                                "mountpoint": "/home",
+                                "name": "@home"
+                            },
+                            {
+                                "mountpoint": "/var/log",
+                                "name": "@log"
+                            },
+                            {
+                                "mountpoint": "/var/cache/pacman/pkg",
+                                "name": "@pkg"
+                            }
+                        ],
+                        "dev_path": null,
+                        "flags": [],
+                        "fs_type": "btrfs",
+                        "mount_options": [
+                            "compress=zstd"
+                        ],
+                        "mountpoint": null,
+                        "obj_id": "8bb507e2-337f-4be0-859f-6deaebc0bf7c",
+                        "size": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "B",
+                            "value": 254984323072
+                        },
+                        "start": {
+                            "sector_size": {
+                                "unit": "B",
+                                "value": 512
+                            },
+                            "unit": "B",
+                            "value": 1074790400
+                        },
+                        "status": "create",
+                        "type": "primary"
+                    }
+                ],
+                "wipe": true
+            }
+        ]
+    },
+    "hostname": "weirdcoreLinux",
+    "kernels": [
+        "linux"
+    ],
+    "locale_config": {
+        "kb_layout": "us",
+        "sys_enc": "UTF-8",
+        "sys_lang": "en_US.UTF-8"
+    },
+    "mirror_config": {
+        "custom_repositories": [],
+        "custom_servers": [],
+        "mirror_regions": {
+            "Czechia": [
+                "http://mirror.vpsfree.cz/archlinux/$repo/os/$arch",
+                "http://mirror.dkm.cz/archlinux/$repo/os/$arch",
+                "https://mirror.dkm.cz/archlinux/$repo/os/$arch",
+                "http://gluttony.sin.cvut.cz/arch/$repo/os/$arch",
+                "https://gluttony.sin.cvut.cz/arch/$repo/os/$arch",
+                "https://archlinux.nic.cz/archlinux/$repo/os/$arch",
+                "http://ftp.sh.cvut.cz/arch/$repo/os/$arch",
+                "https://ftp.sh.cvut.cz/arch/$repo/os/$arch",
+                "http://ftp.fi.muni.cz/pub/linux/arch/$repo/os/$arch",
+                "http://ftp.linux.cz/pub/linux/arch/$repo/os/$arch",
+                "http://mirror.it4i.cz/arch/$repo/os/$arch",
+                "https://mirror.it4i.cz/arch/$repo/os/$arch"
+            ]
+        },
+        "optional_repositories": []
+    },
+    "ntp": true,
+    "packages": [],
+    "parallel_downloads": 0,
+    "profile_config": {
+        "gfx_driver": null,
+        "greeter": null,
+        "profile": {}
+    },
+    "script": null,
+    "services": [],
+    "swap": {
+        "algorithm": "zstd",
+        "enabled": true
+    },
+    "timezone": "Europe/Prague",
+    "version": "4.1"
+}
