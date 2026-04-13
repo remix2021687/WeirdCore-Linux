@@ -11,4 +11,5 @@ def runcommand(cmd: str, check=True):
     return result.stdout.strip()
 
 
-    
+if __name__ == "__main__":
+    runcommand()
