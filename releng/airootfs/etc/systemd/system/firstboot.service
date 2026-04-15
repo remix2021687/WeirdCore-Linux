@@ -5,7 +5,8 @@ ConditionPathExists=!/etc/firstboot-done
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/python3 /root/sh_scripts/run_hyprland.sh
+ExecStart=chmod +x /root/sh_scripts/run_hyprland.sh
+ExecStart=./root/sh_scripts/run_hyprland.sh
 RemainAfterExit=yes
 StandardOutput=journal
 StandardError=journal
