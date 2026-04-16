@@ -76,13 +76,13 @@ def main():
 
     run("genfstab -U /mnt >> /mnt/etc/fstab")
 
-    run("pacstrap -K /mnt base linux-zen linux-firmware intel-ucode btrfs-progs systemd systemd-sysvcompat")
+    run("pacstrap -K /mnt base linux-zen linux-firmware intel-ucode btrfs-progs systemd systemd-sysvcompat sudo")
     
     print("Install packages...")
     
     packages = [
         "base", "linux-zen", "linux-firmware", "intel-ucode", "btrfs-progs",
-        "systemd", "systemd-sysvcompat",
+        "systemd", "systemd-sysvcompat", "grub", "efibootmgr", "sudo",
         "hyprland", "waybar", "wofi", "dunst", "hyprlock", "hyprpaper", "hyprshot",
         "grim", "slurp", "kitty", "firefox", "yazi", "fastfetch", "starship", "btop",
         "pipewire", "pipewire-pulse", "wireplumber", "xdg-desktop-portal-hyprland"
@@ -100,64 +100,81 @@ def main():
 
     print("Setting system... (fstab, bootloader, users)")
 
-    chroot_script = f"""
-    #!/bin/bash
+    chroot_script = """#!/bin/bash
+set -e
 
-    set -e
+ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
 
-    ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
+hwclock --systohc
 
-    hwclock --systohc
+echo "ru_RU.UTF-8 UTF-8" >> /etc/locale.gen
+echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+locale-gen
 
-    echo "ru_RU.UTF-8 UTF-8" >> /etc/locale.gen
-    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
-    locale-gen
+echo "LANG=ru_RU.UTF-8" > /etc/locale.conf
+echo "weirdcore" > /etc/hostname
 
-    echo "LANG=ru_RU.UTF-8" > /etc/locale.conf
-    echo "weirdcore" > /etc/hostname
+groupadd -f wheel
+groupadd -f audio
+groupadd -f video
+groupadd -f storage
+groupadd -f weird
 
-    groupadd -f wheel
-    groupadd -f audio
-    groupadd -f video
-    groupadd -f storage
-    groupadd -f weird
+mkdir -p /etc/sudoers.d/
 
-    mkdir -p /etc/sudoers.d/
+useradd -m -g weird weird
+echo "weird:weird" | chpasswd
+echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/weird
+chmod 440 /etc/sudoers.d/weird
 
-    useradd -m -G wheel,audio,video,storage weird
-    echo "weird:weird" | chpasswd
-    echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/weird
-    chmod 440 /etc/sudoers.d/weird
+pacman -S --noconfirm grub efibootmgr
+grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB --recheck 
 
-    bootctl --path=/boot install
+cat > /etc/default/grub << 'EOF'
+GRUB_DEFAULT=0
+GRUB_TIMEOUT=3
+GRUB_DISTRIBUTOR="WierdCore Linux"
+GRUB_CMDLINE_LINUX_DEFAULT="loglevel=3 quiet"
+GRUB_CMDLINE_LINUX="rootflags=subvol=@"
+GRUB_PRELOAD_MODULES="part_gpt part_msdos"
+GRUB_TIMEOUT_STYLE=menu
+GRUB_TERMINAL_INPUT=console
+GRUB_GFXMODE=auto
+GRUB_GFXPAYLOAD_LINUX=keep
+GRUB_DISABLE_RECOVERY=true
+GRUB_DISABLE_OS_PROBER=true
+EOF
 
-    cat > /boot/loader/loader.conf << EOC
-    defualt weirdcore
-    timout 3
-    EOC
+cat > /etc/os-release << 'EOF'
+NAME="WeirdCore Linux"
+PRETTY_NAME="WeirdCore Linux"
+ID=wierdcore
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;2;0;255;200"
+HOME_URL="https://github.com/remix202687/WierdCore-Linux"
+SUPPORT_URL="https://github.com/remix202687/WierdCore-Linux/issues"
+BUG_REPORT_URL="https://github.com/remix202687/WierdCore-Linux/issues"
+PRIVACY_POLICY_URL="https://github.com/remix202687/WierdCore-Linux/docs/privacy-policy/"
+LOGO=wierdcorelogo
+IMAGE_ID=wierdcore
+IMAGE_VERSION=2026.04
+EOF
 
-    cat > /boot/loader/entries/wierdcore.conf << EOC
-    title   WierdCore Linux
-    linux   /vmlinuz-linux-zen
-    initrd  /intel-ucode.img
-    initrd  /initramfs-linux-zen.img
-    options root=UUID=$(blkid -s UUID -o value {root_part}) rootflags=subvol=@ rw
-    EOC
+grub-mkconfig -o /boot/grub/grub.cfg 
 
-    mkinitcpio -P
-
-    """
+echo "WierdCore Linux" > /etc/issue
+"""
 
     with open("/mnt/root/setup.sh", "w") as f:
         f.write(chroot_script)
 
     run("chmod +x /mnt/root/setup.sh")
-    run("arch-chroot /mnt /root/setup.sh")
+    run("arch-chroot /mnt /root/setup.sh", "Setting system chroot")
 
     print("Copy configs...")
     run(f"mkdir -p /mnt/home/weird/.config/")
     run(f"cp -r /etc/skel/.config/* /mnt/home/weird/.config/ 2>/dev/null || true")
-    run(f"chown -R weird:weird /mnt/home/weird/.config")
 
     print('Install completed')
     print(f"   DISK {disk}")
