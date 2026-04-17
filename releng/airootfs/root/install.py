@@ -1,26 +1,33 @@
+import getpass
 import subprocess
 import sys
 
 from scripts.selectdisk.select_disk import select_disk
 
-def run(cmd, description=""):    
+def run(cmd, description="", live=True):    
     if description:
-        print(f"\n[📌 {description}]")
+        print(f"\n[📌 {description} ]")
     print(f"→ {cmd}")
+
+    if live:
+        result = subprocess.run(cmd, shell=True, text=True)
+    else:
+        result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+        if result.stdout:
+            print(result.stdout.strip())
+        if result.stderr:
+            print(f"⚠️  {result.stderr.strip()}")
     
-    result = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+        if result.returncode != 0:
+            print(f"Command Error")
+            sys.exit(1)
+
     
-    if result.stdout:
-        print(result.stdout.strip())
-    if result.stderr:
-        print(f"⚠️  {result.stderr.strip()}")
     
-    if result.returncode != 0:
-        print(f"Command Error")
-        sys.exit(1)
+    
     
     print("✓ Completed")
-    return result.stdout.strip()
+    return result.stdout.strip() if not live else ""
 
 def main():
     subprocess.run(['clear'], shell=True)
@@ -100,7 +107,10 @@ def main():
 
     print("Setting system... (fstab, bootloader, users)")
 
-    chroot_script = """#!/bin/bash
+    username = input("Write your username: ")
+    password = getpass.getpass("Write your password: ")    
+
+    chroot_script = f"""#!/bin/bash
 set -e
 
 ln -sf /usr/share/zoneinfo/Europe/Prague /etc/localtime
@@ -118,14 +128,13 @@ groupadd -f wheel
 groupadd -f audio
 groupadd -f video
 groupadd -f storage
-groupadd -f weird
 
 mkdir -p /etc/sudoers.d/
 
-useradd -m -g weird weird
-echo "weird:weird" | chpasswd
-echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/weird
-chmod 440 /etc/sudoers.d/weird
+useradd -m --group wheel,audio,video,storage {username}
+echo "{username}:{password}" | chpasswd
+echo "{username} ALL=(ALL) ALL" >> /etc/sudoers.d/00_{username}
+chmod 440 /etc/sudoers.d/00_{username}
 
 pacman -S --noconfirm grub efibootmgr
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB --recheck 
@@ -173,14 +182,15 @@ echo "WierdCore Linux" > /etc/issue
     run("arch-chroot /mnt /root/setup.sh", "Setting system chroot")
 
     print("Copy configs...")
-    run(f"mkdir -p /mnt/home/weird/.config/")
-    run(f"cp -r /etc/skel/.config/* /mnt/home/weird/.config/ 2>/dev/null || true")
+    run(f"mkdir -p /mnt/home/{username}/.config/")
+    run(f'cp -r /etc/skel/.bashrc /mnt/home/{username}/ 2> /dev/null || true')
+    run(f"cp -r /etc/skel/.config/* /mnt/home/{username}/.config/ 2>/dev/null || true")
 
     print('Install completed')
     print(f"   DISK {disk}")
-    print(f"   USERNAME: weird")
-    print(f"   PASSWORD: weird")
-    is_reboot = input("Reboot system ? ")
+    print(f"   USERNAME: {username}")
+    print(f"   PASSWORD: {password}")
+    is_reboot = input("Reboot system ? ").strip()
 
     if is_reboot.lower() == "yes" or is_reboot.lower() == "y":
         run("reboot")
