@@ -11,7 +11,7 @@ def installpackages():
 
         ("Hyprland и окружение", [
             "hyprland", "waybar", "wofi", "dunst", "hyprlock", "hyprpaper", 
-            "hyprshot", "grim", "slurp", "xdg-desktop-portal-hyprland"
+            "hyprshot", "grim", "slurp", "xdg-desktop-portal-hyprland", "sddm"
         ]),
 
         ("Терминал и утилиты", [
